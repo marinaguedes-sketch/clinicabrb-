@@ -1,0 +1,490 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  LayoutDashboard, 
+  Brain, 
+  Droplets, 
+  Activity, 
+  Dna, 
+  Info, 
+  TrendingUp, 
+  Users, 
+  AlertCircle,
+  ChevronRight,
+  Stethoscope,
+  BarChart3,
+  ClipboardList,
+  Target
+} from 'lucide-react';
+
+// --- DATASET ---
+const DATA = {
+  overview: {
+    totalPatientsBase: 317,
+    kpis: [
+      { label: 'Psiquiatria', value: 317, color: 'text-blue-400', bg: 'bg-blue-400/10' },
+      { label: 'Hipertensão', value: 228, color: 'text-indigo-400', bg: 'bg-indigo-400/10' },
+      { label: 'Diabetes', value: 213, color: 'text-teal-400', bg: 'bg-teal-400/10' },
+      { label: 'Neoplasia', value: 23, color: 'text-rose-400', bg: 'bg-rose-400/10' },
+    ]
+  },
+  mentalHealth: {
+    base: 317,
+    comorbidities: [
+      { name: 'Hipertensão', value: 40, percentage: 12.6 },
+      { name: 'Dislipidemia', value: 40, percentage: 12.6 },
+      { name: 'Doença Digestiva', value: 32, percentage: 10.1 },
+      { name: 'Diabetes Mellitus', value: 28, percentage: 8.8 },
+    ]
+  },
+  diabetes: {
+    total: 248,
+    breakdown: [
+      { name: 'Diabetes & Dislipidemia', value: 116, percentage: 46.8, color: '#38bdf8' },
+      { name: 'Diabetes & Hipertensão', value: 61, percentage: 24.6, color: '#818cf8' },
+      { name: 'Apenas Diabetes', value: 71, percentage: 28.6, color: '#475569' },
+    ]
+  },
+  hypertension: {
+    total: 174,
+    breakdown: [
+      { name: 'HTN & Diabetes', value: 93, percentage: 53.4, color: '#38bdf8' },
+      { name: 'Apenas Hipertensão', value: 70, percentage: 40.2, color: '#475569' },
+      { name: 'HTN & Doença Cardíaca', value: 11, percentage: 6.4, color: '#fb7185' },
+    ]
+  },
+  oncology: {
+    total: 23,
+    associations: [
+      { name: 'Dislipidemia', value: 70, color: 'bg-rose-500' },
+      { name: 'Diabetes', value: 50, color: 'bg-slate-400' },
+      { name: 'Saúde Mental', value: 50, color: 'bg-slate-400' },
+    ]
+  }
+};
+
+const App = () => {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Cálculo do Total Geral de Casos (Soma de todos os KPIs)
+  const totalCasesSum = DATA.overview.kpis.reduce((acc, curr) => acc + curr.value, 0);
+
+  useEffect(() => {
+    setIsLoaded(true);
+  }, []);
+
+  const SidebarItem = ({ id, icon: Icon, label }) => (
+    <button
+      onClick={() => setActiveTab(id)}
+      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+        activeTab === id 
+        ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' 
+        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+      }`}
+    >
+      <Icon size={20} />
+      <span className="font-medium">{label}</span>
+      {activeTab === id && <ChevronRight size={16} className="ml-auto" />}
+    </button>
+  );
+
+  const StatCard = ({ label, value, subtext, colorClass, icon: Icon, variant = "default" }) => (
+    <div className={`p-6 rounded-2xl border ${variant === "highlight" ? "border-blue-500/30 bg-blue-600/10" : "border-slate-800 bg-slate-900/50"} backdrop-blur-sm transition-transform hover:scale-[1.02] relative overflow-hidden group`}>
+      <div className="flex justify-between items-start mb-4 relative z-10">
+        <p className="text-slate-400 text-xs uppercase tracking-wider font-bold">{label}</p>
+        {Icon && <Icon size={18} className={`${colorClass} opacity-50`} />}
+      </div>
+      <h3 className={`text-4xl font-black ${colorClass} mb-1 relative z-10`}>{value}</h3>
+      <p className="text-slate-500 text-sm relative z-10">{subtext}</p>
+      <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity">
+        {Icon && <Icon size={100} />}
+      </div>
+    </div>
+  );
+
+  // --- RENDER VIEWS ---
+
+  const renderOverview = () => (
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 p-8 rounded-3xl border border-blue-500/20 bg-gradient-to-br from-blue-600/10 to-transparent flex items-center justify-between overflow-hidden relative">
+          <div className="relative z-10">
+            <h3 className="text-blue-400 font-bold uppercase tracking-widest text-xs mb-2">Volume Total do Estudo</h3>
+            <div className="flex items-baseline gap-4">
+              <span className="text-7xl font-black text-white">{totalCasesSum}</span>
+              <span className="text-blue-200/50 font-medium">Casos Diagnósticos Totais</span>
+            </div>
+            <p className="mt-4 text-slate-400 max-w-md">
+              Consolidado de todas as ocorrências identificadas nos quatro principais eixos epidemiológicos estudados.
+            </p>
+          </div>
+          <BarChart3 size={180} className="absolute -right-10 -bottom-10 text-blue-500/10" />
+        </div>
+
+        <div className="p-8 rounded-3xl border border-slate-800 bg-slate-900/50 flex flex-col justify-center">
+          <p className="text-slate-400 text-xs uppercase font-bold tracking-widest mb-1">Base de Pacientes (n)</p>
+          <h3 className="text-5xl font-black text-slate-100">{DATA.overview.totalPatientsBase}</h3>
+          <p className="text-slate-500 text-sm mt-2 font-medium">Indivíduos únicos na amostra base</p>
+        </div>
+      </section>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {DATA.overview.kpis.map((kpi, i) => (
+          <StatCard 
+            key={i}
+            label={kpi.label}
+            value={kpi.value}
+            subtext="Ocorrências"
+            colorClass={kpi.color}
+            icon={i === 0 ? Brain : i === 1 ? Activity : i === 2 ? Droplets : Dna}
+          />
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 p-8 rounded-3xl border border-slate-800 bg-slate-900/30">
+          <h3 className="text-xl font-bold text-slate-200 mb-6 flex items-center gap-2">
+            <TrendingUp size={20} className="text-blue-400" />
+            Distribuição por Categoria Base
+          </h3>
+          <div className="space-y-6">
+            {DATA.overview.kpis.map((kpi, i) => (
+              <div key={i} className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400 font-medium">{kpi.label}</span>
+                  <div className="space-x-4">
+                    <span className="text-slate-500 font-mono">{kpi.value} casos</span>
+                    <span className="text-slate-200 font-bold">{Math.round((kpi.value / DATA.overview.totalPatientsBase) * 100)}%</span>
+                  </div>
+                </div>
+                <div className="h-3 w-full bg-slate-800 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full transition-all duration-1000 ease-out ${kpi.color.replace('text', 'bg')}`}
+                    style={{ width: isLoaded ? `${(kpi.value / DATA.overview.totalPatientsBase) * 100}%` : '0%' }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="p-8 rounded-3xl border border-slate-800 bg-blue-600 shadow-xl shadow-blue-900/20 text-white flex flex-col justify-center relative overflow-hidden">
+          <div className="relative z-10">
+            <AlertCircle size={40} className="mb-4 text-blue-200" />
+            <h3 className="text-2xl font-bold mb-3">Alerta Crítico</h3>
+            <p className="text-blue-100 leading-relaxed">
+              A saúde mental constitui o eixo central desta amostra, representando o ponto de partida para a análise de todas as demais comorbidades físicas.
+            </p>
+          </div>
+          <div className="absolute -right-10 -bottom-10 opacity-10">
+            <Brain size={200} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderMentalHealth = () => (
+    <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+      <div className="flex flex-col md:flex-row gap-6">
+        <div className="flex-1">
+          <StatCard 
+            label="Total do Grupo Base" 
+            value={DATA.mentalHealth.base} 
+            subtext="Pacientes com Condições Psiquiátricas" 
+            colorClass="text-blue-400" 
+            icon={Brain}
+            variant="highlight"
+          />
+        </div>
+        <div className="flex-1 grid grid-cols-2 gap-4">
+            <div className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800">
+              <p className="text-slate-500 text-xs font-bold uppercase mb-1">Impacto Físico</p>
+              <h4 className="text-2xl font-black text-white">40</h4>
+              <p className="text-slate-400 text-xs">HTN/DLP Associada</p>
+            </div>
+            <div className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800">
+              <p className="text-slate-500 text-xs font-bold uppercase mb-1">Prevalência Digestiva</p>
+              <h4 className="text-2xl font-black text-white">10.1%</h4>
+              <p className="text-slate-400 text-xs">Refluxo/Gastrite</p>
+            </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="p-8 rounded-3xl border border-slate-800 bg-slate-900/30">
+          <h3 className="text-xl font-bold text-slate-200 mb-8">Comorbidades Físicas em Saúde Mental</h3>
+          <div className="space-y-8">
+            {DATA.mentalHealth.comorbidities.map((item, i) => (
+              <div key={i} className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-blue-400 font-bold">
+                  {i + 1}
+                </div>
+                <div className="flex-grow">
+                  <div className="flex justify-between mb-1">
+                    <span className="text-slate-200 font-semibold">{item.name}</span>
+                    <span className="text-slate-400 text-sm">{item.value} casos</span>
+                  </div>
+                  <div className="h-2 w-full bg-slate-800 rounded-full">
+                    <div 
+                      className="h-full bg-blue-500 rounded-full transition-all duration-700"
+                      style={{ width: `${(item.value / 40) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-6">
+          <div className="p-8 rounded-3xl border border-slate-800 bg-slate-900/30 flex items-start gap-6">
+            <div className="p-4 bg-rose-500/10 rounded-2xl text-rose-500">
+              <Stethoscope size={32} />
+            </div>
+            <div>
+              <h4 className="text-lg font-bold text-slate-200 mb-2">Conexão Mente-Corpo</h4>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                As Doenças Digestivas (refluxo, gastrite) surgem como a 4ª condição mais citada, confirmando a forte ligação entre o emocional e o sistema gastrointestinal.
+              </p>
+            </div>
+          </div>
+          <div className="p-8 rounded-3xl border border-slate-800 bg-slate-900/30 flex items-start gap-6">
+            <div className="p-4 bg-indigo-500/10 rounded-2xl text-indigo-500">
+              <Activity size={32} />
+            </div>
+            <div>
+              <h4 className="text-lg font-bold text-slate-200 mb-2">Prevalência Metabólica</h4>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Hipertensão e Dislipidemia são os parceiros físicos dominantes no paciente psiquiátrico, exigindo monitorização cardiovascular contínua.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderDonutChart = (data) => {
+    let currentPos = 0;
+    return (
+      <div className="flex flex-col items-center">
+        <svg viewBox="0 0 100 100" className="w-64 h-64 transform -rotate-90">
+          {data.map((segment, i) => {
+            const strokeDasharray = `${segment.percentage} ${100 - segment.percentage}`;
+            const strokeDashoffset = -currentPos;
+            currentPos += segment.percentage;
+            return (
+              <circle
+                key={i}
+                cx="50" cy="50" r="40"
+                fill="transparent"
+                stroke={segment.color}
+                strokeWidth="12"
+                strokeDasharray={strokeDasharray}
+                strokeDashoffset={strokeDashoffset}
+                className="transition-all duration-1000 ease-in-out"
+                style={{ strokeDasharray: isLoaded ? strokeDasharray : "0 100" }}
+              />
+            );
+          })}
+          <circle cx="50" cy="50" r="30" fill="#1e293b" />
+        </svg>
+        <div className="mt-8 grid grid-cols-1 gap-4 w-full">
+          {data.map((item, i) => (
+            <div key={i} className="flex items-center gap-3 text-sm">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+              <span className="text-slate-400 flex-grow">{item.name}</span>
+              <div className="flex gap-4 items-center">
+                <span className="text-slate-500 text-xs font-mono">{item.value}</span>
+                <span className="text-slate-200 font-bold">{item.percentage}%</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderMetabolic = (type) => {
+    const isDiabetes = type === 'diabetes';
+    const config = isDiabetes ? DATA.diabetes : DATA.hypertension;
+    
+    return (
+      <div className="space-y-8 animate-in slide-in-from-right-4 duration-500">
+        <div className="max-w-md">
+           <StatCard 
+            label={`Total do Grupo ${isDiabetes ? 'Diabetes' : 'Hipertensão'}`} 
+            value={config.total} 
+            subtext={`Pacientes identificados neste segmento`} 
+            colorClass={isDiabetes ? "text-teal-400" : "text-indigo-400"} 
+            icon={Target}
+            variant="highlight"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="p-8 rounded-3xl border border-slate-800 bg-slate-900/30">
+            <h3 className="text-xl font-bold text-slate-200 mb-8 flex items-center gap-2">
+              {isDiabetes ? <Droplets className="text-teal-400" /> : <Activity className="text-indigo-400" />}
+              Composição do Grupo {isDiabetes ? 'Diabetes' : 'Hipertensão'}
+            </h3>
+            {renderDonutChart(config.breakdown)}
+          </div>
+          
+          <div className="space-y-6">
+            <div className="p-8 rounded-3xl border border-slate-800 bg-slate-900/30">
+              <h4 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Destaque de Associação</h4>
+              <div className="flex items-end gap-2 mb-2">
+                <span className="text-6xl font-black text-blue-400">{config.breakdown[0].percentage}%</span>
+                <span className="text-slate-500 mb-2 font-medium">da amostra</span>
+              </div>
+              <p className="text-slate-300 text-lg font-semibold leading-snug">
+                {isDiabetes 
+                  ? "Quase metade dos pacientes diabéticos apresenta Dislipidemia como parceiro clínico primordial."
+                  : "A maioria absoluta dos hipertensos (53.4%) também possui diagnóstico de Diabetes."}
+              </p>
+            </div>
+            
+            <div className="p-6 rounded-3xl border border-blue-500/20 bg-blue-500/5">
+              <p className="text-blue-300 text-sm italic">
+                "Esta sobreposição crítica exige protocolos de tratamento dual, integrando o controlo lipídico/glicémico e tensional numa única linha de cuidado."
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderOncology = () => (
+    <div className="space-y-8 animate-in zoom-in-95 duration-500">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <StatCard 
+          label="Total do Grupo Onco" 
+          value={DATA.oncology.total} 
+          subtext="Pacientes Filtrados por Neoplasia" 
+          colorClass="text-rose-400"
+          icon={Dna}
+          variant="highlight"
+        />
+        <StatCard 
+          label="Associação Líder" 
+          value="70%" 
+          subtext="Dislipidemia" 
+          colorClass="text-rose-400"
+          icon={TrendingUp}
+        />
+        <StatCard 
+          label="Sobreposição Mental" 
+          value="50%" 
+          subtext="Ansiedade/Depressão" 
+          colorClass="text-slate-400"
+          icon={Brain}
+        />
+      </div>
+
+      <div className="p-8 rounded-3xl border border-rose-500/20 bg-slate-900/30">
+        <h3 className="text-xl font-bold text-slate-200 mb-8">Força de Associação no Grupo Oncológico</h3>
+        <div className="space-y-10">
+          {DATA.oncology.associations.map((item, i) => (
+            <div key={i} className="relative pt-1">
+              <div className="flex mb-4 items-center justify-between">
+                <div>
+                  <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-rose-600 bg-rose-200">
+                    {item.name}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs font-semibold inline-block text-rose-600">
+                    {item.value}%
+                  </span>
+                </div>
+              </div>
+              <div className="overflow-hidden h-4 mb-4 text-xs flex rounded-full bg-slate-800">
+                <div 
+                  style={{ width: isLoaded ? `${item.value}%` : '0%' }} 
+                  className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center transition-all duration-1000 ${item.color}`}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="p-8 rounded-3xl border border-slate-800 bg-slate-900/30">
+        <h4 className="text-rose-400 font-bold mb-2">Insight Oncológico Estratégico</h4>
+        <p className="text-slate-400 leading-relaxed">
+          A Dislipidemia é a comorbidade com <strong>maior associação</strong> neste grupo. O manejo lipídico torna-se um pilar obrigatório no suporte ao paciente oncológico, juntamente com o acompanhamento glicémico e psicológico.
+        </p>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-[#020617] text-slate-200 flex">
+      {/* SIDEBAR */}
+      <aside className="w-72 border-r border-slate-800 bg-slate-900/50 flex flex-col p-6 sticky top-0 h-screen">
+        <div className="flex items-center gap-3 mb-10 px-2">
+          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-900/40">
+            S
+          </div>
+          <div>
+            <h1 className="font-bold text-lg leading-none">Saúde Analytics</h1>
+            <span className="text-xs text-slate-500 font-medium">Dashboard Executivo</span>
+          </div>
+        </div>
+
+        <nav className="flex-grow space-y-2">
+          <SidebarItem id="overview" icon={LayoutDashboard} label="Visão Geral" />
+          <div className="py-4 px-2">
+            <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Eixos de Análise</span>
+          </div>
+          <SidebarItem id="mental" icon={Brain} label="Saúde Mental" />
+          <SidebarItem id="diabetes" icon={Droplets} label="Diabetes" />
+          <SidebarItem id="hypertension" icon={Activity} label="Hipertensão" />
+          <SidebarItem id="oncology" icon={Dna} label="Oncologia" />
+        </nav>
+
+        <div className="mt-auto p-4 rounded-2xl bg-slate-800/40 border border-slate-700/50">
+          <div className="flex items-center gap-2 text-xs text-slate-400 mb-2">
+            <Info size={14} />
+            <span>Atualizado em:</span>
+          </div>
+          <p className="text-xs font-bold text-slate-300">Dezembro 2025</p>
+        </div>
+      </aside>
+
+      {/* MAIN CONTENT */}
+      <main className="flex-grow p-10 overflow-y-auto">
+        <header className="mb-10 flex justify-between items-end">
+          <div>
+            <h2 className="text-sm font-bold text-blue-500 uppercase tracking-[0.2em] mb-2">Dashboard Dinâmico</h2>
+            <h1 className="text-4xl font-black text-white tracking-tight">
+              {activeTab === 'overview' && 'Visão Geral dos Totais'}
+              {activeTab === 'mental' && 'Eixo de Saúde Mental'}
+              {activeTab === 'diabetes' && 'Controlo Glicémico'}
+              {activeTab === 'hypertension' && 'Saúde Cardiovascular'}
+              {activeTab === 'oncology' && 'Módulo de Oncologia'}
+            </h1>
+          </div>
+          <div className="flex gap-4">
+            <div className="p-3 bg-slate-900/80 border border-slate-800 rounded-2xl flex items-center gap-3">
+              <ClipboardList size={20} className="text-blue-400" />
+              <div>
+                <p className="text-[10px] font-bold text-slate-500 uppercase">Volume Global</p>
+                <p className="text-sm font-black text-white">{totalCasesSum} Casos</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {activeTab === 'overview' && renderOverview()}
+        {activeTab === 'mental' && renderMentalHealth()}
+        {activeTab === 'diabetes' && renderMetabolic('diabetes')}
+        {activeTab === 'hypertension' && renderMetabolic('hypertension')}
+        {activeTab === 'oncology' && renderOncology()}
+      </main>
+    </div>
+  );
+};
